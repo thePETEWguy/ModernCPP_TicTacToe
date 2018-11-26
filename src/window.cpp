@@ -1,7 +1,5 @@
 #include "window.h"
 
-#include <iostream>
-
 namespace windowutils {
 	extern const std::string window_title = "TicTacToe";
 	extern const int width = 640;
