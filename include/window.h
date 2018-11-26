@@ -1,19 +1,19 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
 #include "SDL2/SDL.h"
 #include <string>
 #include <memory>
 
-namespace gameutils {
+namespace windowutils {
 	extern const std::string window_title;
 	extern const int width;
 	extern const int height;
 }
 
-class Game {
+class Window {
 public:
-	Game() = default;
+	Window() = default;
 
 	static void Init();
 	static void Quit();

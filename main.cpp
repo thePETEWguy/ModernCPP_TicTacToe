@@ -1,18 +1,18 @@
-#include "Game.h"
+#include "window.h"
 
 #include <iostream>
 
 int main(int argc, char** argv)
 {
 	try {
-		Game::Init();
+		Window::Init();
 	}
 	catch (std::runtime_error &e) {
 		std::cout << e.what() << std::endl;
-		Game::Quit();
+		Window::Quit();
 	}
 
-	Game::Quit();
+	Window::Quit();
 
 	return 0;
 }

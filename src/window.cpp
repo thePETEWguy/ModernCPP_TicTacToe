@@ -1,23 +1,25 @@
-#include "Game.h"
+#include "window.h"
 
-namespace gameutils {
+#include <iostream>
+
+namespace windowutils {
 	extern const std::string window_title = "TicTacToe";
 	extern const int width = 640;
 	extern const int height = 480;
 }
 
-std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> Game::window
+std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> Window::window
 = std::unique_ptr<SDL_Window, void(*)(SDL_Window*)>(nullptr, SDL_DestroyWindow);
 
-void Game::Init() {
+void Window::Init() {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 		throw std::runtime_error("Failed to initialize SDL");
 
-	window.reset(SDL_CreateWindow(gameutils::window_title.c_str(),
+	window.reset(SDL_CreateWindow(windowutils::window_title.c_str(),
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		gameutils::width, gameutils::height, SDL_WINDOW_SHOWN));
+		windowutils::width, windowutils::height, SDL_WINDOW_SHOWN));
 }
 
-void Game::Quit() {
+void Window::Quit() {
 	SDL_Quit();
 }
