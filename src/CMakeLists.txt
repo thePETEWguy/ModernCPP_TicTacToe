@@ -1,2 +1,2 @@
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
-ADD_LIBRARY(SRC window.cpp)
+ADD_LIBRARY(SRC window.cpp game.cpp)

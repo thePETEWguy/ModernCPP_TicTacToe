@@ -1,3 +1,4 @@
+#include <game.h>
 #include "window.h"
 
 #include <iostream>
@@ -10,6 +11,17 @@ int main(int argc, char** argv)
 	catch (std::runtime_error &e) {
 		std::cout << e.what() << std::endl;
 		Window::Quit();
+	}
+
+	Game game;
+	SDL_Event event;
+
+	while (game.isRunning()) {
+		while (SDL_PollEvent(&event)) {
+			game.OnInput(&event);
+		}
+		game.Update();
+		game.Render();
 	}
 
 	Window::Quit();

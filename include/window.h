@@ -17,8 +17,12 @@ public:
 
 	static void Init();
 	static void Quit();
+
+	static void Clear();
+	static void Present();
 private:
 	static std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> window;
+	static std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> renderer;
 };
 
 #endif
