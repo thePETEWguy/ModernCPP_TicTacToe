@@ -20,6 +20,8 @@ public:
 
 	static void Clear();
 	static void Present();
+	
+	static const int FPS = 60;
 private:
 	static std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> window;
 	static std::unique_ptr<SDL_Renderer, void(*)(SDL_Renderer*)> renderer;
