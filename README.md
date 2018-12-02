@@ -1,5 +1,5 @@
 # ModernCPP_TicTacToe
-A tic tac toe game written in C++ which uses SDL2 library and SDL2_gfx, compiled on Ubuntu 18.04 with clang compiler using CMake
+A tic tac toe game written in "modern" C++ which uses SDL2 library and SDL2_gfx, compiled on Ubuntu 18.04 with clang compiler using CMake
 
 ### Prerequisites
 To compile the game, you must have CMake, clang, SDL2 and SDL2_gfx installed on your system.
