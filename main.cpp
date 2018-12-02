@@ -20,11 +20,9 @@ int main(int argc, char** argv)
 		while (SDL_PollEvent(&event)) {
 			game.OnInput(&event);
 		}
-		game.Update();
 		game.Render();
 		SDL_Delay(1000 / Window::FPS);
 	}
-
 	Window::Quit();
 
 	return 0;

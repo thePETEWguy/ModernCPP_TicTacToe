@@ -19,15 +19,30 @@ void Window::Init() {
 	window.reset(SDL_CreateWindow(windowutils::window_title.c_str(),
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		windowutils::width, windowutils::height, SDL_WINDOW_SHOWN));
+
+	if (window == nullptr) {
+		throw std::runtime_error("Failed to initialize window");
+	}
+
+	renderer.reset(SDL_CreateRenderer(window.get(), -1, SDL_RENDERER_ACCELERATED));
+
+	if (renderer == nullptr) {
+		throw std::runtime_error("Failed to initialize renderer");
+	}
 }
 
 void Window::Clear(){
     SDL_RenderClear(renderer.get());
 }
+
 void Window::Present(){
     SDL_RenderPresent(renderer.get());
 }
 
 void Window::Quit() {
 	SDL_Quit();
+}
+
+SDL_Renderer* Window::GetRenderer() {
+	return renderer.get();
 }

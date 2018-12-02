@@ -1,16 +1,18 @@
 #include "game.h"
-#include "window.h"
 
 #include <iostream>
 
-Game::Game() : game_state(GameState::running_state), player(0), board(9, -1) {
+Game::Game() : game_state(GameState::running_state), 
+                          player(0), 
+                          board(9, -1),
+                          grid_color {.r = 255, .g = 255, .b = 255},
+                          x_color {.r = 220, .g = 20, .b = 60},
+                          o_color {.r = 0, .g = 0, .b = 255},
+                          row(-1), col(-1) {
 }
 
 bool Game::isRunning(){
     return game_state == GameState::running_state ? true : false;
-}
-
-void Game::Update() {
 }
 
 void Game::OnInput(SDL_Event* event) {
@@ -31,9 +33,9 @@ void Game::OnInput(SDL_Event* event) {
         case SDL_MOUSEBUTTONDOWN: {
             const int x = event->button.x;
             const int y = event->button.y;
-            const int row = GetRow(y) - 1;
-            const int col = GetColumn(x);
-            const int cell = 3 * row + col - 1;
+            row = GetRow(y);
+            col = GetColumn(x);
+            const int cell = 3 * (row - 1) + col - 1;
 
             std::cout << "Player " << player + 1 << " clicked : " << event->button.x << ", " << event->button.y << std::endl;
             if (board[cell] == -1) {
@@ -42,18 +44,16 @@ void Game::OnInput(SDL_Event* event) {
                 if (HasWon(player + 1)) {
                     if (player + 1 == 1) {
                         game_state = GameState::x_won;
-                        std::cout << "X has won" << std::endl;
                     }
                     else {
                         game_state = GameState::o_won;
-                        std::cout << "O has won" << std::endl;
                     }
                 }
-                else {
-                    player = (player + 1) % 2;
+                else if (GameIsTied()) {
+                    game_state = GameState::tie_state;
                 }
+                player = (player + 1) % 2;
             }
-            PrintBoard();
             break;
         }
     }
@@ -66,9 +66,109 @@ void Game::OnInput(SDL_Event* event) {
     }
 }
 
+void Game::RenderGrid(SDL_Renderer* renderer, SDL_Color* color) {
+    SDL_SetRenderDrawColor(renderer, color->r, color->g, color->b, 255);
+
+    for (auto i = 1; i < 3; i++) {
+        SDL_RenderDrawLine(renderer,
+            i * gameutils::cell_width, 0,
+            i * gameutils::cell_width, 480);
+        SDL_RenderDrawLine(renderer,
+            0, i * gameutils::cell_height,
+            640, i * gameutils::cell_height);
+    }
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+}
+
+void Game::DrawX(SDL_Renderer* renderer, int row, int col) {
+    int first_x1 = 10;
+    int first_y1 = 10;
+    int first_x2 = 200;
+    int first_y2 = 150;
+
+    int second_x1 = 200;
+    int second_y1 = 10;
+    int second_x2 = 10;
+    int second_y2 = 150;
+
+    int x_to_add = 0;
+    int y_to_add = 0;
+
+    if (col == 1) {
+        x_to_add = gameutils::cell_width;
+    }
+    else if (col == 2) {
+        x_to_add = gameutils::cell_width * 2;
+    }
+
+    if (row == 1) {
+        y_to_add = gameutils::cell_height;
+    }
+    else if (row == 2) {
+        y_to_add = gameutils::cell_height * 2;
+    }
+
+    thickLineRGBA(renderer, 10 + x_to_add, 10 + y_to_add, 200 + x_to_add, 150 + y_to_add, 20, x_color.r, x_color.g, x_color.b, 255);
+    thickLineRGBA(renderer, 200 + x_to_add, 10 + y_to_add, 10 + x_to_add, 150 + y_to_add, 20, x_color.r, x_color.g, x_color.b, 255);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+}
+
+void Game::DrawO(SDL_Renderer* renderer, int row, int col) {
+    int x_to_add = 0;
+    int y_to_add = 0;
+
+    if (col == 1) {
+        x_to_add = gameutils::cell_width;
+    }
+    else if (col == 2) {
+        x_to_add = gameutils::cell_width * 2;
+    }
+
+    if (row == 1) {
+        y_to_add = gameutils::cell_height;
+    }
+    else if (row == 2) {
+        y_to_add = gameutils::cell_height * 2;
+    }
+
+    filledCircleRGBA(renderer, x_to_add + gameutils::cell_width * 0.5, y_to_add + gameutils::cell_height * 0.5, 75, o_color.r, o_color.g, o_color.b, 255);
+    filledCircleRGBA(renderer, x_to_add + gameutils::cell_width * 0.5, y_to_add + gameutils::cell_height * 0.5, 60, 0, 0, 0, 255);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+}
+
+void Game::RenderBoard(SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, o_color.r, o_color.g, o_color.g, 255);    
+}
+
 void Game::Render() {
-    Window::Clear();
+    RenderGrid(Window::GetRenderer(), &grid_color);
+    if (row != -1 && col != -1) {
+        if (player == 1) {
+            DrawX(Window::GetRenderer(), row - 1, col - 1);
+        }
+        else if (player == 0){
+            DrawO(Window::GetRenderer(), row - 1, col - 1);
+        }
+    }
+
     Window::Present();
+
+    switch (game_state) {
+        case GameState::x_won: {
+            ShowMessageBox("Player1 has won the game");
+            break;
+        }
+        case GameState::o_won: {
+            ShowMessageBox("Player2 has won the game");
+            break;
+        }
+	case GameState::tie_state: {
+	    ShowMessageBox("Game is tied");
+	    break;
+	}
+    }
 }
 
 int Game::GetRow(const int mouse_y) {
@@ -156,4 +256,16 @@ bool Game::WonInSecDiag(int player) {
         }
     }
     return false;
+}
+
+bool Game::GameIsTied() {
+    for (auto index = 0; index < 9; index++) {
+        if (board[index] == -1)
+            return false;
+    }
+    return true;
+}
+
+void Game::ShowMessageBox(const std::string& msg) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "", msg.c_str(), nullptr);
 }
