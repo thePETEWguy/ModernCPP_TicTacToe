@@ -32,11 +32,14 @@ private:
     int GetColumn(const int mouse_y);
     void PrintBoard();
 
-    bool HasWon(int player);
-    bool WonInRows(int player);
-    bool WonInColumns(int player);
-    bool WonInMainDiag(int player);
-    bool WonInSecDiag(int player);
+    void RenderCurrentPlayer();
+    void CheckGameState();
+
+    bool HasWon();
+    bool WonInRows();
+    bool WonInColumns();
+    bool WonInMainDiag();
+    bool WonInSecDiag();
 
     bool GameIsTied();
 

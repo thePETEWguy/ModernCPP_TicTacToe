@@ -3,7 +3,7 @@
 #include <iostream>
 
 Game::Game() : game_state(GameState::running_state), 
-                          player(0), 
+                          player(1), 
                           board(9, -1),
                           grid_color {.r = 255, .g = 255, .b = 255},
                           x_color {.r = 220, .g = 20, .b = 60},
@@ -37,12 +37,11 @@ void Game::OnInput(SDL_Event* event) {
             col = GetColumn(x);
             const int cell = 3 * (row - 1) + col - 1;
 
-            std::cout << "Player " << player + 1 << " clicked : " << event->button.x << ", " << event->button.y << std::endl;
             if (board[cell] == -1) {
-                board[cell] = player + 1;
+                board[cell] = player;
 
-                if (HasWon(player + 1)) {
-                    if (player + 1 == 1) {
+                if (HasWon()) {
+                    if (player == 1) {
                         game_state = GameState::x_won;
                     }
                     else {
@@ -52,17 +51,10 @@ void Game::OnInput(SDL_Event* event) {
                 else if (GameIsTied()) {
                     game_state = GameState::tie_state;
                 }
-                player = (player + 1) % 2;
+                player = (player == 1) ? 2 : 1;
             }
             break;
         }
-    }
-    
-    if (event->type == SDL_QUIT) {
-        game_state = GameState::quit_state;
-    }
-    if (event->key.keysym.sym == SDLK_ESCAPE) {
-        game_state = GameState::quit_state;
     }
 }
 
@@ -72,10 +64,10 @@ void Game::RenderGrid(SDL_Renderer* renderer, SDL_Color* color) {
     for (auto i = 1; i < 3; i++) {
         SDL_RenderDrawLine(renderer,
             i * gameutils::cell_width, 0,
-            i * gameutils::cell_width, 480);
+            i * gameutils::cell_width, windowutils::height);
         SDL_RenderDrawLine(renderer,
             0, i * gameutils::cell_height,
-            640, i * gameutils::cell_height);
+            windowutils::width, i * gameutils::cell_height);
     }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
@@ -144,17 +136,23 @@ void Game::RenderBoard(SDL_Renderer* renderer) {
 
 void Game::Render() {
     RenderGrid(Window::GetRenderer(), &grid_color);
+    RenderCurrentPlayer();
+    Window::Present();
+    CheckGameState();    
+}
+
+void Game::RenderCurrentPlayer() {
     if (row != -1 && col != -1) {
-        if (player == 1) {
+        if (player == 2) {  // because the player changes before rendering, we check the player "swapped"
             DrawX(Window::GetRenderer(), row - 1, col - 1);
         }
-        else if (player == 0){
+        else {
             DrawO(Window::GetRenderer(), row - 1, col - 1);
         }
     }
+}
 
-    Window::Present();
-
+void Game::CheckGameState() {
     switch (game_state) {
         case GameState::x_won: {
             ShowMessageBox("Player1 has won the game");
@@ -164,10 +162,11 @@ void Game::Render() {
             ShowMessageBox("Player2 has won the game");
             break;
         }
-	case GameState::tie_state: {
-	    ShowMessageBox("Game is tied");
-	    break;
-	}
+        case GameState::tie_state: {
+            ShowMessageBox("Game is tied");
+            break;
+        }
+        default: {}
     }
 }
 
@@ -202,23 +201,23 @@ void Game::PrintBoard() {
     }
 }
 
-bool Game::HasWon(int player) {
-    if (WonInRows(player)) {
+bool Game::HasWon() {
+    if (WonInRows()) {
         return true;
     }
-    if (WonInColumns(player)) {
+    if (WonInColumns()) {
         return true;
     }
-    if (WonInMainDiag(player)) {
+    if (WonInMainDiag()) {
         return true;
     }
-    if (WonInSecDiag(player)) {
+    if (WonInSecDiag()) {
         return true;
     }
     return false;
 }
 
-bool Game::WonInRows(int player) {
+bool Game::WonInRows() {
     for (int i = 0; i < 7; i += 3) {
         if (board[i] != -1) {
             if (board[i] == board[i + 1] && board[i + 1] == board[i + 2]) {
@@ -229,7 +228,7 @@ bool Game::WonInRows(int player) {
     return false;
 }
 
-bool Game::WonInColumns(int player) {
+bool Game::WonInColumns() {
     for (int i = 0; i < 3; i++) {
         if (board[i] != -1) {
             if (board[i] == board[i + 3] && board[i + 3] == board[i + 6]){
@@ -240,7 +239,7 @@ bool Game::WonInColumns(int player) {
     return false;
 }
 
-bool Game::WonInMainDiag(int player) {
+bool Game::WonInMainDiag() {
     if (board[0] != -1) {
         if (board[0] == board[4] && board[4] == board[8]) {
             return true;
@@ -249,7 +248,7 @@ bool Game::WonInMainDiag(int player) {
     return false;
 }
 
-bool Game::WonInSecDiag(int player) {
+bool Game::WonInSecDiag() {
     if (board[2] != -1) {
         if (board[2] == board[4] && board[4] == board[6]) {
             return true;
@@ -259,8 +258,8 @@ bool Game::WonInSecDiag(int player) {
 }
 
 bool Game::GameIsTied() {
-    for (auto index = 0; index < 9; index++) {
-        if (board[index] == -1)
+    for (const auto& cell : board) {
+        if (cell == -1)
             return false;
     }
     return true;
